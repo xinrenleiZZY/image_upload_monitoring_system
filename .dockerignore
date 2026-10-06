@@ -1,0 +1,22 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+data/
+*.db
+*.db-wal
+*.db-shm
+.git/
+.gitignore
+.env
+.env.example
+tests/
+examples/
+*.md
+# 接口文档要随镜像发布，供网页「API 接口」页签下载
+!图片上传监控系统接口文档.md
+*.log
+*.bat
+.idea/
+.vscode/

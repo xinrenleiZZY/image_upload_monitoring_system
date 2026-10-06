@@ -1,0 +1,5 @@
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30,<1.0
+pydantic>=2.9,<3.0
+# 纯 Python 时区数据库：镜像里不装 tzdata 系统包也能用 Asia/Shanghai
+tzdata>=2024.1

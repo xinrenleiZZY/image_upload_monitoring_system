@@ -1,0 +1,27 @@
+# 目录名是中文，必须显式指定项目名（否则 compose 报 project name must not be empty）
+name: image-upload-monitor
+
+services:
+  image-upload-monitor:
+    build: .
+    image: image-upload-monitor:1.0.0
+    container_name: image-upload-monitor
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      TZ: Asia/Shanghai
+      # 数据库落到宿主机 ./data，容器重建不丢数据
+      MONITOR_DB_PATH: /app/data/monitor.db
+    ports:
+      - "7701:7701"
+    volumes:
+      - ./data:/app/data
+    extra_hosts:
+      # 容器内访问宿主机（代理 7897 / 本机服务）用 host.docker.internal
+      - "host.docker.internal:host-gateway"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

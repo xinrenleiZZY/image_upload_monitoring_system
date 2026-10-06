@@ -1,0 +1,661 @@
+[
+  {
+    "created_at": "2026-09-16 08:02:41",
+    "description": "Amazon 刊登队列列表：查询刊登队列的刊登任务（含状态/站点/店铺/时间区间过滤）。offset/length 分页；country_id 为站点 ID 列表（1=美国）；start_time/end_time 需随调用日期更新。",
+    "id": "4833dfb271cb",
+    "kind": "web",
+    "meta": {},
+    "method": "POST",
+    "name": "Amazon刊登队列列表（AmazonPublishQueue/list）",
+    "params": {
+      "country_id": [
+        1
+      ],
+      "end_time": "2026-09-16 23:59:59",
+      "is_archive": 0,
+      "length": 20,
+      "offset": 0,
+      "queue_type": [],
+      "req_time_sequence": "/listing-publish-api/api/AmazonPublishQueue/list$$2",
+      "start_time": "2026-08-03 00:00:00",
+      "status": [],
+      "store_id": [],
+      "user_id": []
+    },
+    "source": "manual",
+    "url": "https://gw.lingxingerp.com/listing-publish-api/api/AmazonPublishQueue/list"
+  },
+  {
+    "created_at": "2026-09-07 07:38:31",
+    "description": "给UPC写备注(ASIN配对)；id来自getList，无id时可用commodity_code",
+    "id": "6aadd49e0080",
+    "kind": "web",
+    "meta": {},
+    "method": "POST",
+    "name": "UPC写备注",
+    "params": {
+      "id": 0,
+      "remark": "ASIN",
+      "req_time_sequence": "/api/module/listingPublish/upc.manager/editRemarkInfo$$1"
+    },
+    "source": "manual",
+    "url": "https://huizhixin.lingxing.com/api/module/listingPublish/upc.manager/editRemarkInfo"
+  },
+  {
+    "created_at": "2026-09-07 07:38:31",
+    "description": "分页读UPC池；search_code可按UPC精确查；is_used_desc=未使用且remark空表示可分配",
+    "id": "b596a6913bf8",
+    "kind": "web",
+    "meta": {},
+    "method": "GET",
+    "name": "UPC列表",
+    "params": {
+      "length": 100,
+      "offset": 0,
+      "req_time_sequence": "/api/module/listingPublish/upc.manager/getList$$7",
+      "search_date_type": 1,
+      "sort_field": "gmt_create",
+      "sort_type": "desc"
+    },
+    "source": "manual",
+    "url": "https://huizhixin.lingxing.com/api/module/listingPublish/upc.manager/getList"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "SIF MCP-关键词信号（排名变化）。",
+    "id": "a558578f56e2",
+    "kind": "mcp",
+    "meta": {
+      "auth_header": "secret-key",
+      "auth_value": "sifmcp260520jx8mh8dudredjr9m",
+      "server_kind": "sif",
+      "tool": "market_get_asin_keyword_signals"
+    },
+    "method": "POST",
+    "name": "SIF-关键词信号（market_get_asin_keyword_signals）",
+    "params": {
+      "asin": ""
+    },
+    "source": "manual",
+    "url": "https://mcp.sif.com/mcp"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "SIF MCP-广告结构（ACOS）。",
+    "id": "e2094ab8b3c9",
+    "kind": "mcp",
+    "meta": {
+      "auth_header": "secret-key",
+      "auth_value": "sifmcp260520jx8mh8dudredjr9m",
+      "server_kind": "sif",
+      "tool": "ads_get_asin_ad_structure"
+    },
+    "method": "POST",
+    "name": "SIF-广告结构（ads_get_asin_ad_structure）",
+    "params": {
+      "asin": ""
+    },
+    "source": "manual",
+    "url": "https://mcp.sif.com/mcp"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "SIF MCP-市场画像（评分/评论/BSR/近30天购买量）。asins 为列表。",
+    "id": "d48429bf8dc4",
+    "kind": "mcp",
+    "meta": {
+      "auth_header": "secret-key",
+      "auth_value": "sifmcp260520jx8mh8dudredjr9m",
+      "server_kind": "sif",
+      "tool": "market_get_asin_profile"
+    },
+    "method": "POST",
+    "name": "SIF-市场画像（market_get_asin_profile）",
+    "params": {
+      "asins": [
+        "<asin>"
+      ]
+    },
+    "source": "manual",
+    "url": "https://mcp.sif.com/mcp"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "SIF MCP-销量列表。",
+    "id": "482ff30a2d64",
+    "kind": "mcp",
+    "meta": {
+      "auth_header": "secret-key",
+      "auth_value": "sifmcp260520jx8mh8dudredjr9m",
+      "server_kind": "sif",
+      "tool": "ops_get_asin_sales_list"
+    },
+    "method": "POST",
+    "name": "SIF-销量列表（ops_get_asin_sales_list）",
+    "params": {
+      "asin": ""
+    },
+    "source": "manual",
+    "url": "https://mcp.sif.com/mcp"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "SIF MCP-月度销量趋势（核心销售月/生命周期）。",
+    "id": "659f62e26108",
+    "kind": "mcp",
+    "meta": {
+      "auth_header": "secret-key",
+      "auth_value": "sifmcp260520jx8mh8dudredjr9m",
+      "server_kind": "sif",
+      "tool": "ops_get_asin_sales_trend"
+    },
+    "method": "POST",
+    "name": "SIF-月度销量趋势（ops_get_asin_sales_trend）",
+    "params": {
+      "asin": ""
+    },
+    "source": "manual",
+    "url": "https://mcp.sif.com/mcp"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "领星 MCP-店铺列表，无参数。",
+    "id": "6e8c5021a475",
+    "kind": "mcp",
+    "meta": {
+      "auth_header": "X-Mcp-Key",
+      "auth_value": "0c5f55f5a740639d129c72684dea5441",
+      "server_kind": "lingxing",
+      "tool": "get_my_sids"
+    },
+    "method": "POST",
+    "name": "店铺列表（get_my_sids）",
+    "params": {},
+    "source": "manual",
+    "url": "https://openmcp.lingxing.com/mcp-servers/lingxing-mcp"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "领星 MCP-关键词排名，参数透传 kwargs。",
+    "id": "c331a03d6c8a",
+    "kind": "mcp",
+    "meta": {
+      "auth_header": "X-Mcp-Key",
+      "auth_value": "0c5f55f5a740639d129c72684dea5441",
+      "server_kind": "lingxing",
+      "tool": "query_erp_keyword_ranking_asin"
+    },
+    "method": "POST",
+    "name": "关键词排名（query_erp_keyword_ranking_asin）",
+    "params": {},
+    "source": "manual",
+    "url": "https://openmcp.lingxing.com/mcp-servers/lingxing-mcp"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "领星 MCP-广告商品报告，参数透传 kwargs。",
+    "id": "57f4f2cb738d",
+    "kind": "mcp",
+    "meta": {
+      "auth_header": "X-Mcp-Key",
+      "auth_value": "0c5f55f5a740639d129c72684dea5441",
+      "server_kind": "lingxing",
+      "tool": "ad_campaign_product_report"
+    },
+    "method": "POST",
+    "name": "广告商品报告（ad_campaign_product_report）",
+    "params": {},
+    "source": "manual",
+    "url": "https://openmcp.lingxing.com/mcp-servers/lingxing-mcp"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "领星 MCP-广告活动报告，参数透传 kwargs。",
+    "id": "5214fdef4253",
+    "kind": "mcp",
+    "meta": {
+      "auth_header": "X-Mcp-Key",
+      "auth_value": "0c5f55f5a740639d129c72684dea5441",
+      "server_kind": "lingxing",
+      "tool": "ad_campaign_report"
+    },
+    "method": "POST",
+    "name": "广告活动报告（ad_campaign_report）",
+    "params": {},
+    "source": "manual",
+    "url": "https://openmcp.lingxing.com/mcp-servers/lingxing-mcp"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "领星 MCP-产品表现（广告投入/转化/评论增长），参数透传 kwargs。",
+    "id": "47f53acc8f87",
+    "kind": "mcp",
+    "meta": {
+      "auth_header": "X-Mcp-Key",
+      "auth_value": "0c5f55f5a740639d129c72684dea5441",
+      "server_kind": "lingxing",
+      "tool": "query_product_performance_asin_lists"
+    },
+    "method": "POST",
+    "name": "产品表现（query_product_performance_asin_lists）",
+    "params": {},
+    "source": "manual",
+    "url": "https://openmcp.lingxing.com/mcp-servers/lingxing-mcp"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "领星 MCP-FBA 补货建议全量（海外仓可用/可售天数/断货日/预估日销/建议补货量），offset 分页。",
+    "id": "17b1dfca18a7",
+    "kind": "mcp",
+    "meta": {
+      "auth_header": "X-Mcp-Key",
+      "auth_value": "0c5f55f5a740639d129c72684dea5441",
+      "server_kind": "lingxing",
+      "tool": "query_fba_valid_list"
+    },
+    "method": "POST",
+    "name": "FBA补货建议全量（query_fba_valid_list）",
+    "params": {
+      "length": 200,
+      "offset": 0
+    },
+    "source": "manual",
+    "url": "https://openmcp.lingxing.com/mcp-servers/lingxing-mcp"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "领星 MCP-FBA 库存列表（可售/预留/在途/库存天数）。search_value 填 msku。",
+    "id": "66febe6a4e0e",
+    "kind": "mcp",
+    "meta": {
+      "auth_header": "X-Mcp-Key",
+      "auth_value": "0c5f55f5a740639d129c72684dea5441",
+      "server_kind": "lingxing",
+      "tool": "get_fba_stock_list"
+    },
+    "method": "POST",
+    "name": "FBA库存列表（get_fba_stock_list）",
+    "params": {
+      "is_cost_page": 0,
+      "length": 20,
+      "offset": 0,
+      "search_field": "seller_sku",
+      "search_value": "<msku>",
+      "sort_field": "asc",
+      "sort_type": "asc"
+    },
+    "source": "manual",
+    "url": "https://openmcp.lingxing.com/mcp-servers/lingxing-mcp"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "领星 MCP-毛利报表（毛利率/ROI/退款，优先 total_sum.gross_margin）。search_value 为 [asin] 列表；start_date/end_date 需填写。",
+    "id": "710539a8f4b2",
+    "kind": "mcp",
+    "meta": {
+      "auth_header": "X-Mcp-Key",
+      "auth_value": "0c5f55f5a740639d129c72684dea5441",
+      "server_kind": "lingxing",
+      "tool": "query_order_profit_list_gross_profit"
+    },
+    "method": "POST",
+    "name": "毛利报表（query_order_profit_list_gross_profit）",
+    "params": {
+      "end_date": "",
+      "length": 20,
+      "offset": 0,
+      "search_field": "asin",
+      "search_value": [
+        "<asin>"
+      ],
+      "start_date": "",
+      "summary_field": "msku",
+      "turn_on_summary": 1
+    },
+    "source": "manual",
+    "url": "https://openmcp.lingxing.com/mcp-servers/lingxing-mcp"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "领星 MCP-订单利润报表（销量/销售额/广告花费/ACOS=spend÷ad_sales_amount）。search_value 为 [msku] 列表；start_date/end_date 需填写。",
+    "id": "6f5d8ffab706",
+    "kind": "mcp",
+    "meta": {
+      "auth_header": "X-Mcp-Key",
+      "auth_value": "0c5f55f5a740639d129c72684dea5441",
+      "server_kind": "lingxing",
+      "tool": "query_order_profit_list"
+    },
+    "method": "POST",
+    "name": "订单利润报表（query_order_profit_list）",
+    "params": {
+      "end_date": "",
+      "external_service_mark": 1,
+      "length": 20,
+      "offset": 0,
+      "search_field": "asin",
+      "search_value": [
+        "<msku>"
+      ],
+      "sort_type": "desc",
+      "source_service": "mcp",
+      "start_date": "",
+      "summary_field": "msku",
+      "turn_on_summary": 1
+    },
+    "source": "manual",
+    "url": "https://openmcp.lingxing.com/mcp-servers/lingxing-mcp"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "采购品名同步-按品名高级搜索：返回 SKU、品名、是否组合产品（is_combo）。senior_search_list 中的 <品名> 需替换为实际品名；req_time_sequence 按文档保留原值，若调用异常可更换序号（/api/product/lists$$N）。请求头由代理服务自动注入（auth-token/x-ak-company-id/x-ak-uid 等），无需填写。",
+    "id": "713d1af18921",
+    "kind": "web",
+    "meta": {},
+    "method": "POST",
+    "name": "产品列表-品名高级搜索（product/lists）",
+    "params": {
+      "attribute": [],
+      "cg_opt_uid": [],
+      "cg_package": "",
+      "cg_price": {
+        "left": "",
+        "right": "",
+        "symbol": "gt"
+      },
+      "cg_product_gross_weight": {
+        "left": "",
+        "right": "",
+        "symbol": "gt"
+      },
+      "cg_transport_costs": {
+        "country_code": "US",
+        "left": "",
+        "right": "",
+        "symbol": "gt"
+      },
+      "gtag_ids": "",
+      "is_aux": 0,
+      "is_combo": "",
+      "is_have_pic": "",
+      "is_matched_alibaba": "",
+      "is_matched_listing": "",
+      "length": 50,
+      "offset": 0,
+      "open_status": "",
+      "permission_uid": [],
+      "product_creator_uid": [],
+      "product_developer_uid": [],
+      "product_type": [
+        1,
+        2
+      ],
+      "relation_aux": "",
+      "req_time_sequence": "/api/product/lists$$4",
+      "search_field": "product_name",
+      "search_field_time": "create_time",
+      "selected_product_ids": "",
+      "senior_search_list": "[{\"name\":\"品名\",\"search_field\":\"product_name\",\"search_value\":[\"<品名>\"]}]",
+      "single_product_id": [],
+      "sort_field": "create_time",
+      "sort_type": "desc",
+      "status": [],
+      "supplier_id": []
+    },
+    "source": "manual",
+    "url": "https://huizhixin.lingxing.com/api/product/lists"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "按 SKU 查询刊登结果状态（手动工具，非定时）。请求头由代理服务自动注入（auth-token/x-ak-company-id/x-ak-uid 等），无需填写。",
+    "id": "8ab9da146ca3",
+    "kind": "web",
+    "meta": {},
+    "method": "POST",
+    "name": "刊登结果查询（listing/publish）",
+    "params": {
+      "sku": ""
+    },
+    "source": "manual",
+    "url": "https://huizhixin.lingxing.com/listing/publish/openapi/amazon/product/list"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "自动补货-产品标签关系（长期/节日等）：bindDetail 为产品绑定明细，批量 50/次。请求头由代理服务自动注入（auth-token/x-ak-company-id/x-ak-uid 等），无需填写。",
+    "id": "0c028326e54e",
+    "kind": "web",
+    "meta": {},
+    "method": "POST",
+    "name": "产品标签关系（getRelationTagList）",
+    "params": {
+      "bindDetail": []
+    },
+    "source": "manual",
+    "url": "https://gw.lingxingerp.com/global-tag/global/tag/relation/getRelationTagList"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "自动补货-待到货采购订单：待到货量 → inventory_snapshots.purchase_on_order / products.purchase_on_order。req_time_sequence 防重放序列可省略或动态生成。请求头由代理服务自动注入（auth-token/x-ak-company-id/x-ak-uid 等），无需填写。",
+    "id": "337111a9b448",
+    "kind": "web",
+    "meta": {},
+    "method": "POST",
+    "name": "待到货采购订单（orderListsV2）",
+    "params": {
+      "bids": "",
+      "change_order_status": "",
+      "cids": "",
+      "expect_arrive_time_status": "",
+      "gtag_ids": "",
+      "is_associate_exchange": 0,
+      "is_associate_return": 0,
+      "is_bad": 0,
+      "is_logistics": 0,
+      "is_tax": 0,
+      "is_transparency": "",
+      "is_urgent": "",
+      "length": 50,
+      "max_item_number": 10,
+      "offset": 0,
+      "pay_status": [],
+      "permission_uid_list": [],
+      "record_tag_condition": "equal",
+      "record_tag_ids": "",
+      "search_field": "order_sn",
+      "search_field_time": "create_time",
+      "search_options": "",
+      "search_value": "",
+      "senior_search_list": "",
+      "sid": "",
+      "sort_field": "create_time",
+      "sort_type": "desc",
+      "status": 2,
+      "status_shipped": [],
+      "supplier_ids": "",
+      "wid": ""
+    },
+    "source": "manual",
+    "url": "https://huizhixin.lingxing.com/api/purchase/orderListsV2"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "自动补货-按 ASIN 年度销售统计（queryType=volume/amount；当前按今年 1/1~今日，startDate/endDate 需随调用日期更新）。req_time_sequence 防重放序列可省略或动态生成。请求头由代理服务自动注入（auth-token/x-ak-company-id/x-ak-uid 等），无需填写。",
+    "id": "1c699f78b197",
+    "kind": "web",
+    "meta": {},
+    "method": "POST",
+    "name": "销售统计报表（sales-statistics/report/list）",
+    "params": {
+      "endDate": "2026-08-23",
+      "filterDateType": "year",
+      "groupType": "asin",
+      "page": 1,
+      "pageSize": 1000,
+      "queryType": "volume",
+      "sortField": "total",
+      "sortOrder": "desc",
+      "startDate": "2026-01-01"
+    },
+    "source": "manual",
+    "url": "https://gw.lingxingerp.com/sales-statistics/report/list"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "自动补货-产品管理（箱规）：用于同步 products.box_quantity。注意：payload 不能带多余空字段，否则服务端返回 total=0；分页参数为 offset/length，page/page_size 无效。请求头由代理服务自动注入（auth-token/x-ak-company-id/x-ak-uid 等），无需填写。",
+    "id": "abb78cb63c74",
+    "kind": "web",
+    "meta": {},
+    "method": "POST",
+    "name": "产品列表-箱规同步（product/lists）",
+    "params": {
+      "length": 500,
+      "offset": 0
+    },
+    "source": "manual",
+    "url": "https://huizhixin.lingxing.com/api/product/lists"
+  },
+  {
+    "created_at": "2026-08-24 03:33:09",
+    "description": "自动补货-产品全量：产品基础档案 + 昨日/7/14/30 天销量、销售额、广告花费、FBA 库存、排名、状态等全量字段。可选 begin_date/end_date(YYYY-MM-DD) 按创建时间区间过滤；req_time_sequence 为防重放序列（/listing-api/api/product/showOnline$时间戳），可省略或动态生成。请求头由代理服务自动注入（auth-token/x-ak-company-id/x-ak-uid 等），无需填写。",
+    "id": "9eaafd8dae18",
+    "kind": "web",
+    "meta": {},
+    "method": "POST",
+    "name": "在线商品列表-产品全量（showOnline）",
+    "params": {
+      "exact_search": 1,
+      "fulfillment_channel_type": "",
+      "global_tag_ids": "",
+      "is_pair": "",
+      "length": 200,
+      "offset": 0,
+      "pvi_ids": "",
+      "search_field": "msku",
+      "sids": "",
+      "status": ""
+    },
+    "source": "manual",
+    "url": "https://gw.lingxingerp.com/listing-api/api/product/showOnline"
+  },
+  {
+    "created_at": "2026-08-15 10:04:19",
+    "description": "获取刊登文档列表，支持分页、时间类型、搜索字段及新品筛选。",
+    "id": "32c4ae78f938",
+    "method": "POST",
+    "name": "刊登文档列表2",
+    "params": {
+      "is_new": 1,
+      "length": 20,
+      "offset": 0,
+      "search_field": "spu_name",
+      "time_type": 1
+    },
+    "source": "deepseek",
+    "url": "https://gw.lingxingerp.com/listing-publish-api/api/publishDocument/list"
+  },
+  {
+    "created_at": "2026-08-15 10:03:29",
+    "description": "获取刊登文档列表，支持分页和搜索。",
+    "id": "c966e3659488",
+    "method": "POST",
+    "name": "刊登文档列表",
+    "params": {
+      "exact_search": false,
+      "length": 200,
+      "offset": 0,
+      "search_field": ""
+    },
+    "source": "deepseek",
+    "url": "https://gw.lingxingerp.com/listing-publish-api/api/publishDocument/list"
+  },
+  {
+    "created_at": "2026-08-15 10:02:25",
+    "description": "获取在线商品列表，支持按MSKU等字段搜索和分页排序。",
+    "id": "6d06ba13289c",
+    "method": "POST",
+    "name": "在线商品列表2",
+    "params": {
+      "exact_search": 0,
+      "fulfillment_channel_type": "",
+      "global_tag_ids": "",
+      "is_pair": "",
+      "length": 50,
+      "offset": 0,
+      "pvi_ids": "",
+      "req_time_sequence": "/listing-api/api/product/showOnline$$3",
+      "search_field": "msku",
+      "sids": "",
+      "sort_field": "msku",
+      "sort_type": "desc",
+      "status": ""
+    },
+    "source": "deepseek",
+    "url": "https://gw.lingxingerp.com/listing-api/api/product/showOnline"
+  },
+  {
+    "created_at": "2026-08-15 05:55:19",
+    "description": "批量获取在线商品信息",
+    "id": "f45b77503f55",
+    "method": "POST",
+    "name": "批量在线商品列表",
+    "params": {
+      "length": 5,
+      "offset": 0
+    },
+    "source": "deepseek",
+    "url": "https://gw.lingxingerp.com/listing-api/api/product/ehartOnlineForBatch"
+  },
+  {
+    "created_at": "2026-08-15 05:54:24",
+    "description": "获取全局标签关联列表，用于查询标签与实体的关联关系。",
+    "id": "f810e59c483d",
+    "method": "POST",
+    "name": "获取关联标签列表",
+    "params": {
+      "exact_search": false,
+      "length": 200,
+      "offset": 0,
+      "search_field": ""
+    },
+    "source": "deepseek",
+    "url": "https://gw.lingxingerp.com/global-tag/global/tag/relation/getRelationTagList"
+  },
+  {
+    "created_at": "2026-08-15 10:22:19",
+    "description": "ASIN→标签映射（各账号通用）",
+    "id": "d8d08cf3146b",
+    "method": "POST",
+    "name": "商品标签",
+    "params": {
+      "bindDetail": []
+    },
+    "source": "manual",
+    "url": "https://gw.lingxingerp.com/global-tag/global/tag/relation/getRelationTagList"
+  },
+  {
+    "created_at": "2026-08-15 10:22:19",
+    "description": "获取调整定价",
+    "id": "7ba88d4a7731",
+    "method": "POST",
+    "name": "获取调整定价",
+    "params": {},
+    "source": "manual",
+    "url": "https://gw.lingxingerp.com/listing-api/api/product/getAdjustPricing"
+  },
+  {
+    "created_at": "2026-08-15 05:53:48",
+    "description": "获取在线商品列表，支持分页和搜索。",
+    "id": "4dfd1a787344",
+    "method": "POST",
+    "name": "在线商品列表",
+    "params": {
+      "exact_search": 0,
+      "length": 200,
+      "offset": 0,
+      "search_field": "sku",
+      "search_value": ""
+    },
+    "source": "deepseek",
+    "url": "https://gw.lingxingerp.com/listing-api/api/product/showOnline"
+  }
+]

@@ -1,0 +1,1198 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>图片上传监控系统</title>
+<style>
+  :root {
+    --bg-primary:#f7f8fa; --bg-secondary:#f6f8fa; --bg-tertiary:#eef1f4;
+    --border-color:#d0d7de; --text-primary:#1f2328; --text-secondary:#57606a;
+    --text-tertiary:#8b949e; --accent-blue:#0969da; --accent-green:#1a7f37;
+    --accent-red:#cf222e; --accent-orange:#9a6700; --accent-purple:#8250df;
+    --card-bg:#ffffff; --card-shadow:0 1px 3px rgba(31,35,40,.08),0 1px 2px rgba(31,35,40,.04);
+    --hover-bg:#f3f4f6; --code-bg:#0d1117; --code-text:#e6edf3;
+    --accent-dim:rgba(9,105,218,.12); --grid-color:rgba(9,105,218,.035);
+    --radius:12px;
+  }
+  body.dark {
+    --bg-primary:#0d1117; --bg-secondary:#161b22; --bg-tertiary:#21262d;
+    --border-color:#30363d; --text-primary:#e6edf3; --text-secondary:#9da7b3;
+    --text-tertiary:#7d8590; --accent-blue:#58a6ff; --accent-green:#3fb950;
+    --accent-red:#f85149; --accent-orange:#d29922; --accent-purple:#bc8cff;
+    --card-bg:#161b22; --card-shadow:0 1px 3px rgba(0,0,0,.35); --hover-bg:#21262d;
+    --code-bg:#010409; --code-text:#e6edf3; --accent-dim:rgba(88,166,255,.14);
+    --grid-color:rgba(88,166,255,.03);
+  }
+  * { box-sizing:border-box; }
+  html, body { margin:0; padding:0; }
+  body {
+    min-height:100vh; background:var(--bg-primary); color:var(--text-primary);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans","Microsoft YaHei",Helvetica,Arial,sans-serif;
+    font-size:14px; transition:background-color .25s,color .25s;
+  }
+  body::before {
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:linear-gradient(var(--grid-color) 1px,transparent 1px),
+                     linear-gradient(90deg,var(--grid-color) 1px,transparent 1px);
+    background-size:44px 44px;
+  }
+  ::-webkit-scrollbar { width:9px; height:9px; }
+  ::-webkit-scrollbar-thumb { background:var(--border-color); border-radius:5px; }
+  .topbar {
+    position:sticky; top:0; z-index:30; display:flex; align-items:center;
+    justify-content:space-between; gap:16px; flex-wrap:wrap; padding:12px 26px;
+    background:var(--card-bg); border-bottom:1px solid var(--border-color);
+  }
+  .brand { display:flex; align-items:center; gap:14px; min-width:0; }
+  .logo {
+    width:44px; height:44px; flex:0 0 44px; display:flex; align-items:center;
+    justify-content:center; border-radius:12px; color:#fff; font-weight:800; font-size:16px;
+    background:linear-gradient(135deg,#0969da,#1a7f37);
+  }
+  .brand h1 { margin:0; font-size:18px; font-weight:700; }
+  .brand .sub { margin-top:2px; font-size:12px; color:var(--text-tertiary); }
+  .top-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .hzx-btn {
+    background:transparent; border:1.5px solid var(--accent-blue); color:var(--accent-blue);
+    padding:7px 14px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;
+    transition:all .18s; display:inline-flex; align-items:center; gap:6px;
+  }
+  .hzx-btn:hover:not(:disabled) { background:var(--accent-blue); color:#fff; }
+  .hzx-btn:disabled { opacity:.5; cursor:not-allowed; }
+  .hzx-btn.soft { border-color:var(--border-color); color:var(--text-secondary); }
+  .hzx-btn.soft:hover:not(:disabled) { background:var(--hover-bg); color:var(--text-primary); }
+  .hzx-btn.green { border-color:var(--accent-green); color:var(--accent-green); }
+  .hzx-btn.green:hover:not(:disabled) { background:var(--accent-green); color:#fff; }
+  .hzx-btn.red { border-color:var(--accent-red); color:var(--accent-red); }
+  .hzx-btn.red:hover:not(:disabled) { background:var(--accent-red); color:#fff; }
+  .hzx-btn.mini { padding:4px 10px; font-size:12px; border-width:1px; }
+  nav.tabs {
+    display:flex; gap:4px; flex-wrap:wrap; padding:10px 20px 0; position:relative; z-index:2;
+  }
+  .tab {
+    background:transparent; border:none; border-bottom:2px solid transparent;
+    color:var(--text-secondary); padding:9px 14px; font-size:14px; font-weight:600;
+    cursor:pointer; border-radius:8px 8px 0 0;
+  }
+  .tab:hover { background:var(--hover-bg); color:var(--text-primary); }
+  .tab.active { color:var(--accent-blue); border-bottom-color:var(--accent-blue); background:var(--card-bg); }
+  main { position:relative; z-index:1; padding:18px 26px 60px; }
+  .panel { display:none; }
+  .panel.active { display:block; }
+  .card {
+    background:var(--card-bg); border:1px solid var(--border-color); border-radius:var(--radius);
+    box-shadow:var(--card-shadow); padding:16px 18px; margin-bottom:16px;
+  }
+  .card h2 { margin:0 0 12px; font-size:15px; font-weight:700; }
+  .card h2 .hint { font-weight:400; font-size:12px; color:var(--text-tertiary); margin-left:8px; }
+  .grid { display:grid; gap:14px; }
+  .stats { grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); }
+  .stat {
+    background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:10px;
+    padding:12px 14px;
+  }
+  .stat .k { font-size:12px; color:var(--text-tertiary); }
+  .stat .v { font-size:22px; font-weight:700; margin-top:6px; }
+  .stat.ok .v { color:var(--accent-green); }
+  .stat.bad .v { color:var(--accent-red); }
+  .stat.warn .v { color:var(--accent-orange); }
+  .stat.info .v { color:var(--accent-blue); }
+  .kv { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:8px 20px; font-size:13px; }
+  .kv div { color:var(--text-secondary); }
+  .kv b { color:var(--text-primary); font-weight:600; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+  .field { display:flex; flex-direction:column; gap:5px; }
+  .field label { font-size:12px; color:var(--text-tertiary); }
+  input, select, textarea {
+    background:var(--bg-secondary); border:1px solid var(--border-color); color:var(--text-primary);
+    border-radius:8px; padding:7px 10px; font-size:13px; font-family:inherit; outline:none; min-width:120px;
+  }
+  input:focus, select:focus, textarea:focus { border-color:var(--accent-blue); }
+  textarea { min-height:70px; width:100%; resize:vertical; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { padding:9px 10px; border-bottom:1px solid var(--border-color); text-align:left; vertical-align:top; }
+  th { color:var(--text-tertiary); font-weight:600; font-size:12px; white-space:nowrap; background:var(--bg-secondary); }
+  tbody tr:hover { background:var(--hover-bg); }
+  td.mono, .mono { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:12px; }
+  .table-wrap { overflow:auto; border:1px solid var(--border-color); border-radius:10px; }
+  .pill {
+    display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:600;
+    border:1px solid transparent;
+  }
+  .pill.ok { color:var(--accent-green); background:rgba(26,127,55,.12); border-color:rgba(26,127,55,.3); }
+  .pill.bad { color:var(--accent-red); background:rgba(207,34,46,.12); border-color:rgba(207,34,46,.3); }
+  .pill.warn { color:var(--accent-orange); background:rgba(154,103,0,.12); border-color:rgba(154,103,0,.3); }
+  .pill.info { color:var(--accent-blue); background:var(--accent-dim); border-color:var(--accent-dim); }
+  .pill.mute { color:var(--text-tertiary); background:var(--bg-tertiary); border-color:var(--border-color); }
+  .pill.purple { color:var(--accent-purple); background:rgba(130,80,223,.12); border-color:rgba(130,80,223,.3); }
+  .muted { color:var(--text-tertiary); font-size:12px; }
+  .pager { display:flex; align-items:center; gap:10px; margin-top:12px; }
+  #toast {
+    position:fixed; right:22px; bottom:22px; z-index:99; display:flex; flex-direction:column; gap:8px;
+  }
+  #toast .item {
+    background:var(--card-bg); border:1px solid var(--border-color); border-left:4px solid var(--accent-blue);
+    border-radius:8px; padding:10px 14px; box-shadow:var(--card-shadow); min-width:220px; max-width:420px;
+    font-size:13px; animation:slidein .2s ease;
+  }
+  #toast .item.ok { border-left-color:var(--accent-green); }
+  #toast .item.err { border-left-color:var(--accent-red); }
+  @keyframes slidein { from { transform:translateX(20px); opacity:0; } }
+  .modal {
+    position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center;
+    justify-content:center; z-index:80; padding:24px;
+  }
+  .modal.show { display:flex; }
+  .modal .box {
+    background:var(--card-bg); border-radius:var(--radius); border:1px solid var(--border-color);
+    max-width:1050px; width:100%; max-height:86vh; overflow:auto; padding:20px 22px;
+  }
+  .modal .box h3 { margin:0 0 12px; font-size:16px; }
+  .setitem { display:flex; flex-direction:column; gap:6px; padding:10px 0; border-bottom:1px dashed var(--border-color); }
+  .setitem .lbl { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; }
+  .setitem .help { font-size:12px; color:var(--text-tertiary); }
+  .src { font-size:11px; padding:1px 6px; border-radius:6px; border:1px solid var(--border-color); color:var(--text-tertiary); }
+  .src.ui { color:var(--accent-blue); border-color:var(--accent-dim); }
+  .src.env { color:var(--accent-green); border-color:rgba(26,127,55,.3); }
+  .inline { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .err-text { color:var(--accent-red); }
+  code.inline-code { background:var(--bg-tertiary); padding:1px 6px; border-radius:6px; font-size:12px; }
+  .empty { padding:20px; text-align:center; color:var(--text-tertiary); font-size:13px; }
+  pre.code {
+    background:var(--bg-tertiary); border:1px solid var(--border-color); border-radius:10px;
+    padding:12px 14px; margin:0; overflow:auto; font-size:12.5px; line-height:1.6;
+    font-family:ui-monospace,SFMono-Regular,Consolas,"Courier New",monospace;
+    white-space:pre; color:var(--text-primary);
+  }
+  .codeblock { position:relative; margin-bottom:12px; }
+  .codeblock .copy {
+    position:absolute; top:8px; right:8px; padding:3px 10px; font-size:12px;
+    border:1px solid var(--border-color); border-radius:6px; background:var(--card-bg);
+    color:var(--text-secondary); cursor:pointer;
+  }
+  .codeblock .copy:hover { color:var(--accent-blue); border-color:var(--accent-blue); }
+  .codeblock .cap { font-size:12px; color:var(--text-tertiary); margin-bottom:6px; }
+  .doc-tip { background:var(--accent-dim); border-radius:8px; padding:10px 12px; font-size:13px; margin-bottom:12px; }
+  ol.steps { margin:6px 0 0 18px; padding:0; font-size:13px; color:var(--text-secondary); }
+  ol.steps li { margin-bottom:4px; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">图</div>
+    <div>
+      <h1>图片上传监控系统</h1>
+      <div class="sub" id="subTitle">领星上传队列监控 · 自动跟进 · 飞书通知</div>
+    </div>
+  </div>
+  <div class="top-actions">
+    <label class="inline muted"><input type="checkbox" id="autoRefresh" checked style="min-width:auto"> 自动刷新</label>
+    <button class="hzx-btn soft" id="themeBtn" title="切换深浅色">◐ 主题</button>
+    <button class="hzx-btn" id="pollBtn">⟳ 立即取数</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="dashboard">概览</button>
+  <button class="tab" data-tab="records">上传记录</button>
+  <button class="tab" data-tab="sessions">跟进任务</button>
+  <button class="tab" data-tab="polls">轮询日志</button>
+  <button class="tab" data-tab="messages">飞书通知</button>
+  <button class="tab" data-tab="apidoc">API 接口</button>
+  <button class="tab" data-tab="settings">系统设置</button>
+</nav>
+
+<main>
+  <!-- 概览 -->
+  <section class="panel active" id="panel-dashboard">
+    <div class="card">
+      <h2>数据概览 <span class="hint" id="dashTime"></span></h2>
+      <div class="grid stats" id="statCards"></div>
+    </div>
+    <div class="card">
+      <h2>运行状态</h2>
+      <div class="kv" id="statusKv"></div>
+    </div>
+    <div class="card">
+      <h2>数据来源 <span class="hint">默认自建 API 站为主数据源、领星直连为备（可在「系统设置 → 兜底接口」切换）</span></h2>
+      <div class="kv" id="fallbackKv"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="hzx-btn" id="fbTestBtn">测试自建 API 站</button>
+        <span class="muted">测试只取 2 条样例，不会写库、不会发消息</span>
+      </div>
+    </div>
+    <div class="card">
+      <h2>ASIN 状态速查 <span class="hint">支持逗号分隔多个 ASIN</span></h2>
+      <div class="row">
+        <div class="field" style="flex:1 1 320px">
+          <label>ASIN</label>
+          <input id="qAsin" placeholder="例如 B0HCVJ6HLY,B0HDTTHHTW">
+        </div>
+        <button class="hzx-btn" id="qAsinBtn">查询</button>
+        <button class="hzx-btn green" id="qFollowBtn" title="对查询到的 ASIN 建立跟进任务">请求跟进</button>
+        <input id="qOwner" placeholder="负责人（可空）" style="flex:0 1 180px">
+      </div>
+      <div class="table-wrap" id="qResult" style="margin-top:12px; display:none"></div>
+    </div>
+    <div class="card">
+      <h2>最近跟进事件</h2>
+      <div class="table-wrap" id="eventTable"></div>
+    </div>
+    <div class="card">
+      <h2>飞书消息测试</h2>
+      <div class="row">
+        <div class="field" style="flex:1 1 420px">
+          <label>发送内容（留空则发送默认测试消息）</label>
+          <input id="testMsg" placeholder="留空发送默认测试消息">
+        </div>
+        <button class="hzx-btn" id="testMsgBtn">发送测试</button>
+      </div>
+      <div class="muted" style="margin-top:8px">
+        未收到消息时，请到「系统设置 → 飞书通知」填写 app_id / app_secret / chat_id，
+        或填写群自定义机器人 Webhook 地址。
+      </div>
+    </div>
+  </section>
+
+  <!-- 上传记录 -->
+  <section class="panel" id="panel-records">
+    <div class="card">
+      <h2>筛选条件</h2>
+      <div class="row">
+        <div class="field"><label>ASIN</label><input id="fAsin" placeholder="模糊匹配"></div>
+        <div class="field"><label>状态</label>
+          <select id="fStatus">
+            <option value="">全部</option>
+            <option value="success">成功</option>
+            <option value="failed">失败</option>
+            <option value="processing">处理中</option>
+          </select>
+        </div>
+        <div class="field"><label>店铺</label><input id="fStore"></div>
+        <div class="field"><label>国家</label><input id="fCountry"></div>
+        <div class="field"><label>关键字</label><input id="fKeyword" placeholder="MSKU/品名/FNSKU/操作人/失败原因"></div>
+        <div class="field"><label>结果时间起</label><input id="fFrom" type="date"></div>
+        <div class="field"><label>结果时间止</label><input id="fTo" type="date"></div>
+        <div class="field"><label>排序</label>
+          <select id="fOrder">
+            <option value="operate_desc">结果时间倒序</option>
+            <option value="operate_asc">结果时间正序</option>
+            <option value="seen_desc">最后更新倒序</option>
+            <option value="status">按状态</option>
+          </select>
+        </div>
+        <button class="hzx-btn" id="rSearchBtn">查询</button>
+        <button class="hzx-btn soft" id="rResetBtn">重置</button>
+        <button class="hzx-btn soft" id="rCsvBtn">导出 CSV</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>上传记录 <span class="hint" id="recordsCount"></span></h2>
+      <div class="table-wrap" id="recordsTable"></div>
+      <div class="pager">
+        <button class="hzx-btn soft mini" id="rPrev">上一页</button>
+        <span class="muted" id="rPageInfo">-</span>
+        <button class="hzx-btn soft mini" id="rNext">下一页</button>
+        <span class="muted">每页</span>
+        <select id="rSize" style="min-width:80px">
+          <option>20</option><option selected>50</option><option>100</option><option>200</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- 跟进任务 -->
+  <section class="panel" id="panel-sessions">
+    <div class="card">
+      <h2>新建跟进任务 <span class="hint">等价于第三方「请求跟进」推送</span></h2>
+      <div class="row">
+        <div class="field" style="flex:1 1 300px"><label>ASIN（可逗号分隔多个）</label><input id="sAsin"></div>
+        <div class="field"><label>负责人（可空）</label><input id="sOwner"></div>
+        <button class="hzx-btn green" id="sAddBtn">建立跟进</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>筛选</h2>
+      <div class="row">
+        <div class="field"><label>状态</label>
+          <select id="sState">
+            <option value="active">进行中</option>
+            <option value="">全部</option>
+            <option value="completed">已成功</option>
+            <option value="failed">已失败</option>
+            <option value="closed">已结束</option>
+            <option value="cancelled">已取消</option>
+          </select>
+        </div>
+        <div class="field"><label>来源</label>
+          <select id="sSource">
+            <option value="">全部</option>
+            <option value="api_request">第三方推送</option>
+            <option value="manual">手工建立</option>
+            <option value="auto_processing">自动(处理中)</option>
+            <option value="auto_failed">自动(失败)</option>
+          </select>
+        </div>
+        <div class="field"><label>ASIN</label><input id="sFilterAsin"></div>
+        <button class="hzx-btn" id="sSearchBtn">查询</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>跟进任务 <span class="hint" id="sessionsCount"></span></h2>
+      <div class="table-wrap" id="sessionsTable"></div>
+    </div>
+  </section>
+
+  <!-- 轮询日志 -->
+  <section class="panel" id="panel-polls">
+    <div class="card">
+      <h2>取数记录 <span class="hint">每次调用领星接口的结果</span></h2>
+      <div class="table-wrap" id="pollTable"></div>
+      <div class="pager">
+        <button class="hzx-btn soft mini" id="pPrev">上一页</button>
+        <span class="muted" id="pPageInfo">-</span>
+        <button class="hzx-btn soft mini" id="pNext">下一页</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 飞书通知 -->
+  <section class="panel" id="panel-messages">
+    <div class="card">
+      <h2>筛选</h2>
+      <div class="row">
+        <div class="field"><label>类型</label>
+          <select id="mKind">
+            <option value="">全部</option>
+            <option value="retry">重试消息</option>
+            <option value="success">成功消息</option>
+            <option value="final_failure">人工检查</option>
+            <option value="poll_error">取数告警</option>
+            <option value="fallback">兜底切换</option>
+            <option value="test">测试</option>
+          </select>
+        </div>
+        <div class="field"><label>ASIN</label><input id="mAsin"></div>
+        <label class="inline muted" style="margin-top:18px"><input type="checkbox" id="mFailed" style="min-width:auto"> 只看失败</label>
+        <button class="hzx-btn" id="mSearchBtn">查询</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>发送记录 <span class="hint" id="msgCount"></span></h2>
+      <div class="table-wrap" id="msgTable"></div>
+      <div class="pager">
+        <button class="hzx-btn soft mini" id="mPrev">上一页</button>
+        <span class="muted" id="mPageInfo">-</span>
+        <button class="hzx-btn soft mini" id="mNext">下一页</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 系统设置 -->
+  <!-- API 接口文档 -->
+  <section class="panel" id="panel-apidoc">
+    <div class="card">
+      <h2>第三方「请求跟进」接口 <span class="hint">上传产品图片的程序处理完成后调用一次即可</span></h2>
+      <div class="doc-tip">
+        作用：把「这个 ASIN 刚上传完成」告诉监控系统 → 系统立刻进入跟进模式（每 10 分钟查一次领星状态），
+        失败自动在飞书群 @二号虾掌柜 发重试消息，成功发成功消息，最多重试 5 次后提示人工检查。
+        <br><b>推送后先等 2 分钟再第一次取数判定</b>（给领星留出更新状态的时间，可在
+        「系统设置 → 调度与跟进 → 收到推送后延迟检查(分钟)」调整），之后每 10 分钟检查一次——<b>只需要推一次</b>。
+      </div>
+      <div class="kv" id="apiBaseKv"></div>
+    </div>
+
+    <div class="card">
+      <h2>请求参数（三种传参方式任选：JSON / 表单 / URL 参数）</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>字段</th><th>必填</th><th>类型</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">asin</td><td>是</td><td>字符串</td>
+              <td>ASIN；别名 <span class="mono">parent_asin</span>。<b>支持一次传多个</b>：
+                <span class="mono">asins</span> 数组、或 <span class="mono">asin</span> 里用逗号/分号/空格/换行分隔，
+                一次最多 200 个</td></tr>
+            <tr><td class="mono">timestamp</td><td>否</td><td>字符串/数字</td>
+              <td>上传完成时间，如 <span class="mono">2026-09-16 15:45:02</span>、ISO 格式、秒/毫秒时间戳；不传取服务端时间</td></tr>
+            <tr><td class="mono">owner</td><td>否</td><td>字符串</td>
+              <td>负责人，会写进飞书消息的「负责人XXX」；别名 <span class="mono">operator</span> / <span class="mono">负责人</span></td></tr>
+            <tr><td class="mono">source</td><td>否</td><td>字符串</td><td>来源标识，仅记录（如 product-image-upload）</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="muted" style="margin-top:10px">
+        返回：<span class="mono">code=0</span> 表示已接收并进入跟进模式；ASIN 为空或格式不对返回 HTTP 400。
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>调用示例 <span class="hint">把示例地址换成服务电脑的局域网地址即可</span></h2>
+      <div id="apiExamples"></div>
+    </div>
+
+    <div class="card">
+      <h2>批量请求跟进 <span class="hint">同一个负责人（或没有负责人）的多个 ASIN 一次提交</span></h2>
+      <div class="doc-tip">
+        一次可以传多个 ASIN：系统会<b>按 ASIN 逐个建立跟进任务</b>——每个 ASIN 独立计时、独立查状态、
+        独立发飞书消息（该 ASIN 失败就只重试该 ASIN），互不影响。返回值 <span class="mono">data.items</span>
+        里一个 ASIN 一条结果，失败的会在该条的 <span class="mono">error</span> 里说明（其余正常受理）。
+      </div>
+      <div id="apiBatch"></div>
+    </div>
+
+    <div class="card">
+      <h2>返回示例</h2>
+      <div id="apiResponse"></div>
+    </div>
+
+    <div class="card">
+      <h2>其它接口</h2>
+      <div class="table-wrap" id="apiEndpoints"></div>
+    </div>
+
+    <div class="card">
+      <h2>完整文档</h2>
+      <div class="row">
+        <a class="hzx-btn" href="/docs" target="_blank">Swagger 在线调试 (/docs)</a>
+        <a class="hzx-btn soft" href="/openapi.json" target="_blank">OpenAPI JSON</a>
+        <a class="hzx-btn soft" href="/api/ui/doc/download">下载 Markdown 接口文档</a>
+      </div>
+      <div style="margin-top:12px" id="apiDocUrls"></div>
+      <div class="muted" style="margin-top:10px" id="apiAuthNote"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-settings">
+    <div class="card">
+      <h2>参数设置 <span class="hint">保存后立即生效；留空表示回落到 .env / 默认值</span></h2>
+      <div class="row">
+        <button class="hzx-btn green" id="setSaveBtn">保存全部</button>
+        <button class="hzx-btn soft" id="setReloadBtn">重新加载</button>
+        <span class="muted">来源标记：<span class="src ui">界面</span> <span class="src env">环境变量</span> <span class="src">默认</span></span>
+      </div>
+    </div>
+    <div id="settingsGroups"></div>
+  </section>
+</main>
+
+<div id="toast"></div>
+<div class="modal" id="modal"><div class="box" id="modalBox"></div></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const state = {
+  tab: "dashboard",
+  records: { items: [], total: 0, page: 1, size: 50 },
+  sessions: { items: [], page: 1 },
+  polls: { items: [], page: 1 },
+  messages: { items: [], page: 1 },
+  settings: null,
+  refreshTimer: null,
+};
+
+function esc(v) {
+  return (v === null || v === undefined ? "" : String(v))
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+function fmt(v, max = 60) {
+  const s = (v === null || v === undefined ? "" : String(v)).trim();
+  if (!s) return '<span class="muted">-</span>';
+  return esc(s.length > max ? s.slice(0, max) + "…" : s);
+}
+function toast(message, type = "ok") {
+  const el = document.createElement("div");
+  el.className = "item " + (type === "err" ? "err" : type === "warn" ? "warn" : "ok");
+  el.textContent = message;
+  $("#toast").appendChild(el);
+  setTimeout(() => el.remove(), type === "err" ? 6000 : 3200);
+}
+function statusPill(text) {
+  const map = { success: ["ok", "成功"], failed: ["bad", "失败"], processing: ["warn", "处理中"], unknown: ["mute", "未知"] };
+  const [cls, label] = map[text] || ["mute", text || "-"];
+  return `<span class="pill ${cls}">${label}</span>`;
+}
+function statePill(text) {
+  const map = { active: ["info", "跟进中"], completed: ["ok", "已成功"], failed: ["bad", "已失败"], cancelled: ["mute", "已取消"], closed: ["mute", "已结束"] };
+  const [cls, label] = map[text] || ["mute", text || "-"];
+  return `<span class="pill ${cls}">${label}</span>`;
+}
+function kindLabel(kind) {
+  return { retry: "重试消息", success: "成功消息", final_failure: "人工检查", poll_error: "取数告警",
+    fallback: "兜底切换", test: "测试", resend: "重发" }[kind] || kind;
+}
+function sourceLabel(src) {
+  return { api_request: "第三方推送", manual: "手工建立", auto_processing: "自动(处理中)", auto_failed: "自动(失败)" }[src] || src;
+}
+
+async function api(path, options = {}) {
+  const resp = await fetch(path, Object.assign({}, options, {
+    headers: Object.assign({ "Content-Type": "application/json" }, options.headers || {}),
+  }));
+  let data = null;
+  try { data = await resp.json(); } catch (e) { data = null; }
+  if (!resp.ok || (data && data.code !== 0)) {
+    const msg = data ? (data.message || JSON.stringify(data.detail || "").slice(0, 200)) : ("HTTP " + resp.status);
+    throw new Error(msg || ("HTTP " + resp.status));
+  }
+  return data;
+}
+
+// ── 主题 ──
+const THEME_KEY = "monitor-theme";
+if (localStorage.getItem(THEME_KEY) === "dark") document.body.classList.add("dark");
+$("#themeBtn").onclick = () => {
+  const dark = document.body.classList.toggle("dark");
+  localStorage.setItem(THEME_KEY, dark ? "dark" : "light");
+};
+
+// ── 标签页 ──
+function switchTab(name) {
+  state.tab = name;
+  document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
+  document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.id === "panel-" + name));
+  const loaders = {
+    dashboard: loadDashboard,
+    records: () => loadRecords(1),
+    sessions: () => loadSessions(),
+    polls: () => loadPolls(1),
+    messages: () => loadMessages(1),
+    apidoc: loadApiDoc,
+    settings: loadSettings,
+  };
+  (loaders[name] || (() => {}))();
+}
+document.querySelectorAll(".tab").forEach((b) => {
+  b.onclick = () => switchTab(b.dataset.tab);
+});
+
+// ── 概览 ──
+async function loadDashboard() {
+  try {
+    const res = await api("/api/ui/summary");
+    const d = res.data;
+    $("#dashTime").textContent = "服务时间 " + (d.server_time || "");
+    const cards = [
+      ["累计上传记录", d.records_total, "info"],
+      ["覆盖 ASIN", d.asins_total, "info"],
+      ["成功", d.status_counts.success, "ok"],
+      ["失败", d.status_counts.failed, "bad"],
+      ["处理中", d.status_counts.processing, "warn"],
+      ["进行中跟进", d.follow_active, "info"],
+      ["今日状态变化", d.status_changes_today, ""],
+      ["今日飞书消息", d.messages_today, ""],
+      ["今日取数失败", d.error_runs_today, d.error_runs_today ? "bad" : "ok"],
+    ];
+    $("#statCards").innerHTML = cards.map(([k, v, cls]) =>
+      `<div class="stat ${cls}"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`).join("");
+    const c = d.config || {};
+    const rows = [
+      ["上次取数", d.last_poll_at || "尚未取数"],
+      ["上次成功取数", d.last_poll_ok_at || "-"],
+      ["下次取数", d.next_poll_at || "-"],
+      ["下次跟进检查", d.next_follow_tick || "-"],
+      ["取数窗口", (d.window && d.window.start ? d.window.start + " ~ " + d.window.end : "-")],
+      ["取数间隔", (c.poll_interval_minutes || "-") + " 分钟 / 处理中 " + (c.processing_poll_interval_minutes || "-") + " 分钟"],
+      ["跟进节奏", (c.follow_interval_minutes || "-") + " 分钟一次，单轮 " + (c.follow_round_minutes || "-") + " 分钟，最多 " + (c.follow_max_attempts || "-") + " 次"],
+      ["失败自动跟进起始时间", c.follow_start_at ? c.follow_start_at + "（更早的历史失败不跟进）" : "不限制"],
+      ["领星 token", c.lingxing_ready ? '<b style="color:var(--accent-green)">已配置</b>' : '<b class="err-text">未配置</b>'],
+      ["飞书通知", c.feishu_ready ? '<b style="color:var(--accent-green)">已配置</b>' : '<b class="err-text">未配置</b>'],
+      ["代理", c.lingxing_proxy || "直连"],
+    ];
+    if (d.last_poll_error) rows.push(["最近取数错误", '<span class="err-text">' + esc(d.last_poll_error) + "</span>"]);
+    if (d.scheduler) rows.push(["调度线程", (d.scheduler.running ? "运行中" : "未运行") + "，最近动作 " + esc(d.scheduler.last_action || "-")]);
+    $("#statusKv").innerHTML = rows.map(([k, v]) => `<div>${esc(k)}：${typeof v === "string" && v.includes("<b") ? v : "<b>" + esc(v) + "</b>"}</div>`).join("");
+    const fbRows = [
+      ["上次取数来源", d.last_data_source_cn || "-"],
+      ["自建 API 站地址", (c.fallback_base_url || "-") + (c.fallback_account ? "（账号 " + c.fallback_account + "）" : "")],
+      ["自建 API 站状态", c.fallback_ready
+        ? '<b style="color:var(--accent-green)">已配置</b>'
+        : (c.fallback_enabled ? '<b class="err-text">已启用但未配置完整（需要 X-User-Id / X-User-Token）</b>' : "未启用")],
+      ["主数据源失败原因", d.last_primary_error ? '<span class="err-text">' + esc(d.last_primary_error) + "</span>" : "-"],
+      ["最近一次走备用源", d.last_fallback_at || "-"],
+    ];
+    $("#fallbackKv").innerHTML = fbRows.map(([k, v]) =>
+      `<div>${esc(k)}：${typeof v === "string" && v.includes("<b") ? v : "<b>" + esc(v) + "</b>"}</div>`).join("");
+    await loadEvents();
+  } catch (e) { toast("加载概览失败：" + e.message, "err"); }
+}
+async function loadEvents() {
+  try {
+    const res = await api("/api/ui/events?limit=30");
+    const items = res.data.items || [];
+    if (!items.length) { $("#eventTable").innerHTML = '<div class="empty">暂无跟进事件</div>'; return; }
+    $("#eventTable").innerHTML = `<table><thead><tr><th>时间</th><th>ASIN</th><th>事件</th><th>说明</th></tr></thead><tbody>`
+      + items.map((e) => `<tr><td class="mono">${fmt(e.created_at)}</td><td class="mono">${fmt(e.parent_asin)}</td>
+          <td>${fmt(e.event)}</td><td>${fmt(e.detail, 160)}</td></tr>`).join("") + "</tbody></table>";
+  } catch (e) { /* 忽略 */ }
+}
+
+// ── ASIN 查询 ──
+async function queryAsin() {
+  const asins = $("#qAsin").value.trim();
+  if (!asins) { toast("请填写 ASIN", "warn"); return; }
+  try {
+    const res = await api("/api/ui/status?asins=" + encodeURIComponent(asins));
+    const items = res.data.items || [];
+    $("#qResult").style.display = "block";
+    $("#qResult").innerHTML = `<table><thead><tr>
+        <th>ASIN</th><th>最新状态</th><th>领星状态名</th><th>店铺</th><th>产品名</th>
+        <th>失败原因</th><th>完成时间</th><th>跟进</th></tr></thead><tbody>`
+      + items.map((it) => `<tr>
+          <td class="mono">${fmt(it.asin)}</td>
+          <td>${it.found ? statusPill(it.status_text) : '<span class="pill mute">无记录</span>'}</td>
+          <td>${fmt(it.status_name)}</td><td>${fmt(it.store_name)}</td>
+          <td>${fmt(it.item_name, 40)}</td><td>${fmt(it.failure_reason, 60)}</td>
+          <td class="mono">${fmt(it.finish_time)}</td>
+          <td>${it.follow_state === "active"
+              ? '<span class="pill info">跟进中(' + esc(it.follow_attempts) + ')</span>'
+              : '<button class="hzx-btn mini" onclick="followAsin(\'' + esc(it.asin) + '\')">请求跟进</button>'}</td>
+        </tr>`).join("") + "</tbody></table>";
+  } catch (e) { toast("查询失败：" + e.message, "err"); }
+}
+async function followAsin(asin) {
+  const owner = $("#qOwner").value.trim();
+  try {
+    await api("/api/ui/sessions/request", { method: "POST", body: JSON.stringify({ asins: [asin], owner }) });
+    toast(asin + " 已进入跟进模式");
+    queryAsin();
+  } catch (e) { toast("请求跟进失败：" + e.message, "err"); }
+}
+window.followAsin = followAsin;
+
+async function requestFollowFromQuery() {
+  const asins = $("#qAsin").value.trim();
+  if (!asins) { toast("请填写 ASIN", "warn"); return; }
+  const owner = $("#qOwner").value.trim();
+  try {
+    const res = await api("/api/ui/sessions/request", { method: "POST", body: JSON.stringify({ asins, owner }) });
+    const ok = (res.data.items || []).filter((x) => x.ok).length;
+    toast(`已建立 ${ok} 个跟进任务`);
+    queryAsin();
+  } catch (e) { toast("请求跟进失败：" + e.message, "err"); }
+}
+
+// ── 上传记录 ──
+function recordParams() {
+  const p = new URLSearchParams();
+  p.set("asin", $("#fAsin").value.trim());
+  p.set("status_text", $("#fStatus").value);
+  p.set("store_name", $("#fStore").value.trim());
+  p.set("country_name", $("#fCountry").value.trim());
+  p.set("keyword", $("#fKeyword").value.trim());
+  p.set("changed_from", $("#fFrom").value ? $("#fFrom").value + " 00:00:00" : "");
+  p.set("changed_to", $("#fTo").value ? $("#fTo").value + " 23:59:59" : "");
+  p.set("order", $("#fOrder").value);
+  p.set("page", state.records.page);
+  p.set("page_size", state.records.size);
+  return p;
+}
+async function loadRecords(page) {
+  if (page) state.records.page = page;
+  try {
+    const res = await api("/api/ui/records?" + recordParams().toString());
+    state.records.items = res.data.items || [];
+    state.records.total = res.data.total || 0;
+    renderRecords();
+  } catch (e) { toast("加载上传记录失败：" + e.message, "err"); }
+}
+function renderRecords() {
+  const items = state.records.items;
+  $("#recordsCount").textContent = `共 ${state.records.total} 条`;
+  if (!items.length) { $("#recordsTable").innerHTML = '<div class="empty">没有符合条件的记录</div>'; }
+  else {
+    $("#recordsTable").innerHTML = `<table><thead><tr>
+      <th>ASIN</th><th>状态</th><th>领星状态</th><th>店铺</th><th>国家</th><th>MSKU</th>
+      <th>产品名</th><th>操作人</th><th>失败原因</th><th>完成时间</th><th>最后更新</th><th>操作</th>
+    </tr></thead><tbody>` + items.map((r) => `<tr>
+        <td class="mono">${r.parent_asin ? fmt(r.parent_asin)
+          : '<span class="pill mute" title="该队列类型没有 ASIN，仅按 MSKU 展示">无ASIN</span>'}</td>
+        <td>${statusPill(r.status_text)}</td>
+        <td>${fmt(r.status_name)}</td>
+        <td>${fmt(r.store_name)}</td>
+        <td>${fmt(r.country_name)}</td>
+        <td class="mono">${fmt(r.msku, 24)}</td>
+        <td>${fmt(r.item_name, 42)}</td>
+        <td>${fmt(r.user_name)}</td>
+        <td>${fmt(r.failure_reason, 60)}</td>
+        <td class="mono">${fmt(r.finish_time)}</td>
+        <td class="mono">${fmt(r.last_seen_at)}</td>
+        <td>${r.parent_asin
+          ? `<button class="hzx-btn mini soft" onclick="showDetail('${esc(r.parent_asin)}')">详情</button>`
+          : '<span class="muted">-</span>'}</td>
+      </tr>`).join("") + "</tbody></table>";
+  }
+  const pages = Math.max(1, Math.ceil(state.records.total / state.records.size));
+  $("#rPageInfo").textContent = `第 ${state.records.page} / ${pages} 页`;
+  $("#rPrev").disabled = state.records.page <= 1;
+  $("#rNext").disabled = state.records.page >= pages;
+}
+function downloadCsv(filename, headers, rows) {
+  const q = (v) => '"' + (v === null || v === undefined ? "" : String(v)).replace(/"/g, '""') + '"';
+  const csv = "\uFEFF" + [headers, ...rows].map((r) => r.map(q).join(",")).join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+}
+function exportRecords() {
+  if (!state.records.items.length) { toast("没有可导出的数据", "warn"); return; }
+  downloadCsv("上传记录.csv",
+    ["ASIN", "状态", "领星状态", "店铺", "国家", "MSKU", "FNSKU", "产品名", "操作人", "失败原因", "完成时间", "最后更新"],
+    state.records.items.map((r) => [r.parent_asin, r.status_text, r.status_name, r.store_name, r.country_name,
+      r.msku, r.fnsku, r.item_name, r.user_name, r.failure_reason, r.finish_time, r.last_seen_at]));
+}
+
+// ── ASIN 详情 ──
+async function showDetail(asin) {
+  try {
+    const res = await api("/api/ui/records/" + encodeURIComponent(asin));
+    const d = res.data;
+    const rec = d.records[0] || {};
+    const s = d.session;
+    const html = `<h3>${esc(asin)} 详情</h3>
+      <div class="kv" style="margin-bottom:14px">
+        <div>最新状态：${statusPill(rec.status_text)} ${esc(rec.status_name || "")}</div>
+        <div>店铺：<b>${esc(rec.store_name || "-")}</b></div>
+        <div>国家：<b>${esc(rec.country_name || "-")}</b></div>
+        <div>操作人：<b>${esc(rec.user_name || "-")}</b></div>
+        <div>完成时间：<b>${esc(rec.finish_time || "-")}</b></div>
+        <div>提交时间：<b>${esc(rec.operate_time || "-")}</b></div>
+        <div>队列 ID：<b class="mono">${esc(rec.queue_unique_id || "-")}</b></div>
+        <div>跟进会话：${s ? statePill(s.state) + " 重试 " + esc(s.attempts) + "/" + esc(s.max_attempts) + " 次" : "无"}</div>
+      </div>
+      ${rec.item_name ? `<div class="muted" style="margin-bottom:10px">产品名：${esc(rec.item_name)}</div>` : ""}
+      ${rec.failure_reason ? `<div class="muted" style="margin-bottom:10px">失败原因：<span class="err-text">${esc(rec.failure_reason)}</span></div>` : ""}
+      <h4 style="margin:14px 0 8px;font-size:14px">状态变化历史</h4>
+      <div class="table-wrap"><table><thead><tr><th>观测时间</th><th>状态</th><th>领星状态名</th><th>变化类型</th><th>失败原因</th><th>完成时间</th></tr></thead><tbody>
+      ${(d.history || []).map((h) => `<tr><td class="mono">${fmt(h.observed_at)}</td><td>${statusPill(h.status_text)}</td>
+        <td>${fmt(h.status_name)}</td><td>${fmt(h.change_kind)}</td><td>${fmt(h.failure_reason, 60)}</td><td class="mono">${fmt(h.finish_time)}</td></tr>`).join("")}
+      </tbody></table></div>
+      <h4 style="margin:14px 0 8px;font-size:14px">跟进事件</h4>
+      <div class="table-wrap"><table><thead><tr><th>时间</th><th>事件</th><th>说明</th></tr></thead><tbody>
+      ${(d.events || []).map((e) => `<tr><td class="mono">${fmt(e.created_at)}</td><td>${fmt(e.event)}</td><td>${fmt(e.detail, 200)}</td></tr>`).join("") || '<tr><td colspan="3" class="empty">暂无事件</td></tr>'}
+      </tbody></table></div>
+      <h4 style="margin:14px 0 8px;font-size:14px">飞书消息</h4>
+      <div class="table-wrap"><table><thead><tr><th>时间</th><th>类型</th><th>内容</th><th>结果</th></tr></thead><tbody>
+      ${(d.messages || []).map((m) => `<tr><td class="mono">${fmt(m.created_at)}</td><td>${esc(kindLabel(m.kind))}</td>
+        <td>${fmt(m.content, 160)}</td><td>${m.ok ? '<span class="pill ok">已发送</span>' : '<span class="pill bad">失败</span>'}</td></tr>`).join("") || '<tr><td colspan="4" class="empty">暂无消息</td></tr>'}
+      </tbody></table></div>
+      <div class="row" style="margin-top:14px">
+        <button class="hzx-btn green" onclick="followAsin('${esc(asin)}')">请求跟进</button>
+        <button class="hzx-btn soft" onclick="closeModal()">关闭</button>
+      </div>`;
+    $("#modalBox").innerHTML = html;
+    $("#modal").classList.add("show");
+  } catch (e) { toast("加载详情失败：" + e.message, "err"); }
+}
+function closeModal() { $("#modal").classList.remove("show"); }
+window.showDetail = showDetail;
+window.closeModal = closeModal;
+$("#modal").onclick = (ev) => { if (ev.target.id === "modal") closeModal(); };
+
+// ── 跟进任务 ──
+async function loadSessions() {
+  const p = new URLSearchParams();
+  p.set("state", $("#sState").value);
+  p.set("source", $("#sSource").value);
+  p.set("asin", $("#sFilterAsin").value.trim());
+  p.set("page", state.sessions.page);
+  p.set("page_size", 50);
+  try {
+    const res = await api("/api/ui/sessions?" + p.toString());
+    const items = res.data.items || [];
+    $("#sessionsCount").textContent = `共 ${res.data.total} 个任务`;
+    if (!items.length) { $("#sessionsTable").innerHTML = '<div class="empty">暂无跟进任务</div>'; return; }
+    $("#sessionsTable").innerHTML = `<table><thead><tr>
+      <th>ASIN</th><th>状态</th><th>来源</th><th>负责人</th><th>重试</th><th>最新状态</th>
+      <th>本轮截止</th><th>下次检查</th><th>创建时间</th><th>结束原因</th><th>操作</th>
+    </tr></thead><tbody>` + items.map((s) => `<tr>
+      <td class="mono">${fmt(s.parent_asin)}</td>
+      <td>${statePill(s.state)}</td>
+      <td>${esc(sourceLabel(s.source))}</td>
+      <td>${fmt(s.owner)}</td>
+      <td>${esc(s.attempts)}/${esc(s.max_attempts)}${s.notify_on_failure ? "" : ' <span class="pill mute" title="该会话不发送飞书消息">静默</span>'}</td>
+      <td>${statusPill(s.last_status_text)}</td>
+      <td class="mono">${fmt(s.round_deadline_at)}</td>
+      <td class="mono">${fmt(s.next_tick_at)}</td>
+      <td class="mono">${fmt(s.opened_at)}</td>
+      <td>${fmt(s.close_reason, 40)}</td>
+      <td class="inline">
+        <button class="hzx-btn mini soft" onclick="showDetail('${esc(s.parent_asin)}')">详情</button>
+        ${s.state === "active" ? `<button class="hzx-btn mini" onclick="tickSession(${s.id})">立即检查</button>
+        <button class="hzx-btn mini red" onclick="closeSession(${s.id})">结束</button>` : ""}
+      </td>
+    </tr>`).join("") + "</tbody></table>";
+  } catch (e) { toast("加载跟进任务失败：" + e.message, "err"); }
+}
+async function tickSession(id) {
+  toast("正在立即检查…");
+  try { await api(`/api/ui/sessions/${id}/tick`, { method: "POST" }); toast("已检查，稍后刷新列表"); loadSessions(); }
+  catch (e) { toast("检查失败：" + e.message, "err"); }
+}
+async function closeSession(id) {
+  if (!confirm("确认结束该跟进任务？")) return;
+  try { await api(`/api/ui/sessions/${id}/close`, { method: "POST" }); toast("已结束"); loadSessions(); }
+  catch (e) { toast("操作失败：" + e.message, "err"); }
+}
+window.tickSession = tickSession;
+window.closeSession = closeSession;
+async function addSession() {
+  const asins = $("#sAsin").value.trim();
+  if (!asins) { toast("请填写 ASIN", "warn"); return; }
+  try {
+    const res = await api("/api/ui/sessions/request", {
+      method: "POST", body: JSON.stringify({ asins, owner: $("#sOwner").value.trim() }),
+    });
+    const items = res.data.items || [];
+    const ok = items.filter((x) => x.ok).length;
+    toast(`已建立 ${ok} 个跟进任务` + (items.length - ok ? `，${items.length - ok} 个失败` : ""));
+    $("#sAsin").value = "";
+    loadSessions();
+  } catch (e) { toast("建立失败：" + e.message, "err"); }
+}
+
+// ── 轮询日志 ──
+async function loadPolls(page) {
+  if (page) state.polls.page = page;
+  try {
+    const res = await api(`/api/ui/poll-runs?page=${state.polls.page}&page_size=50`);
+    const items = res.data.items || [];
+    if (!items.length) { $("#pollTable").innerHTML = '<div class="empty">还没有取数记录</div>'; }
+    else {
+      $("#pollTable").innerHTML = `<table><thead><tr>
+        <th>开始时间</th><th>触发</th><th>状态</th><th>请求数</th><th>接口总数</th><th>取回</th>
+        <th>新增</th><th>更新</th><th>状态变化</th><th>窗口</th><th>数据来源</th><th>错误</th>
+      </tr></thead><tbody>` + items.map((r) => `<tr>
+        <td class="mono">${fmt(r.started_at)}</td>
+        <td>${fmt(r.trigger_name)}</td>
+        <td>${r.status === "ok" ? '<span class="pill ok">成功</span>' : r.status === "error" ? '<span class="pill bad">失败</span>' : '<span class="pill warn">运行中</span>'}</td>
+        <td>${esc(r.http_requests)}</td><td>${esc(r.api_total)}</td><td>${esc(r.fetched)}</td>
+        <td>${esc(r.inserted)}</td><td>${esc(r.updated)}</td><td>${esc(r.changed)}</td>
+        <td class="mono">${fmt(r.window_start, 20)} ~ ${fmt(r.window_end, 20)}</td>
+        <td>${fmt(r.detail, 60)}</td>
+        <td>${fmt(r.error, 80)}</td>
+      </tr>`).join("") + "</tbody></table>";
+    }
+    const pages = Math.max(1, Math.ceil((res.data.total || 0) / 50));
+    $("#pPageInfo").textContent = `第 ${state.polls.page} / ${pages} 页 · 共 ${res.data.total} 次`;
+    $("#pPrev").disabled = state.polls.page <= 1;
+    $("#pNext").disabled = state.polls.page >= pages;
+  } catch (e) { toast("加载轮询日志失败：" + e.message, "err"); }
+}
+
+// ── 飞书通知 ──
+async function loadMessages(page) {
+  if (page) state.messages.page = page;
+  const p = new URLSearchParams({
+    kind: $("#mKind").value, asin: $("#mAsin").value.trim(),
+    only_failed: $("#mFailed").checked, page: state.messages.page, page_size: 50,
+  });
+  try {
+    const res = await api("/api/ui/feishu/messages?" + p.toString());
+    const items = res.data.items || [];
+    $("#msgCount").textContent = `共 ${res.data.total} 条`;
+    if (!items.length) { $("#msgTable").innerHTML = '<div class="empty">暂无消息记录</div>'; }
+    else {
+      $("#msgTable").innerHTML = `<table><thead><tr>
+        <th>时间</th><th>类型</th><th>ASIN</th><th>目标</th><th>内容</th><th>结果</th><th>操作</th>
+      </tr></thead><tbody>` + items.map((m) => `<tr>
+        <td class="mono">${fmt(m.created_at)}</td>
+        <td>${esc(kindLabel(m.kind))}</td>
+        <td class="mono">${fmt(m.parent_asin)}</td>
+        <td class="mono">${fmt(m.targets, 24)}</td>
+        <td>${fmt(m.content, 120)}</td>
+        <td>${m.ok ? '<span class="pill ok">已发送</span>' : '<span class="pill bad" title="' + esc(m.error) + '">失败</span>'}</td>
+        <td><button class="hzx-btn mini soft" onclick="resendMessage(${m.id})">重发</button></td>
+      </tr>`).join("") + "</tbody></table>";
+    }
+    const pages = Math.max(1, Math.ceil((res.data.total || 0) / 50));
+    $("#mPageInfo").textContent = `第 ${state.messages.page} / ${pages} 页`;
+    $("#mPrev").disabled = state.messages.page <= 1;
+    $("#mNext").disabled = state.messages.page >= pages;
+  } catch (e) { toast("加载消息失败：" + e.message, "err"); }
+}
+async function resendMessage(id) {
+  try { await api(`/api/ui/feishu/resend/${id}`, { method: "POST" }); toast("已重发"); loadMessages(); }
+  catch (e) { toast("重发失败：" + e.message, "err"); }
+}
+window.resendMessage = resendMessage;
+
+// ── API 接口文档 ──
+function codeBlock(parent, caption, code) {
+  const wrap = document.createElement("div");
+  wrap.className = "codeblock";
+  if (caption) {
+    const cap = document.createElement("div");
+    cap.className = "cap";
+    cap.textContent = caption;
+    wrap.appendChild(cap);
+  }
+  const pre = document.createElement("pre");
+  pre.className = "code";
+  pre.textContent = code;
+  const btn = document.createElement("button");
+  btn.className = "copy";
+  btn.textContent = "复制";
+  btn.onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      btn.textContent = "已复制";
+    } catch (e) {
+      const range = document.createRange();
+      range.selectNodeContents(pre);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      btn.textContent = "请按 Ctrl+C";
+    }
+    setTimeout(() => { btn.textContent = "复制"; }, 2000);
+  };
+  wrap.appendChild(pre);
+  wrap.appendChild(btn);
+  parent.appendChild(wrap);
+}
+
+async function loadApiDoc() {
+  let info = null;
+  try { info = (await api("/api/ui/api-info")).data; } catch (e) { /* 用默认内容 */ }
+  // 示例地址：优先用「系统设置 → 接口文档 → 对外访问地址」，否则用当前浏览器地址
+  const configured = info && info.public_base_url ? String(info.public_base_url).replace(/\/+$/, "") : "";
+  const origin = configured || window.location.origin;
+  const isLocal = /127\.0\.0\.1|localhost/i.test(window.location.hostname);
+  const asin = "B0HCVJ6HLY";
+  const ts = new Date().toLocaleString("sv-SE").replace("T", " ");
+  const owner = "何紫欣";
+
+  $("#apiBaseKv").innerHTML = [
+    ["接口地址", `<b class="mono">${esc(origin)}/api/v1/follow/request</b>`],
+    ["请求方法", "POST（也支持 GET，便于简单脚本调用）"],
+    ["当前认证", info && info.api_token_required
+      ? '已开启令牌：请求头需带 <b class="mono">X-API-Token</b>'
+      : "未开启令牌（当前可直接调用，无需请求头）"],
+    ["服务时间", esc((info && info.server_time) || "")],
+    ["示例地址来源", configured
+      ? `「系统设置 → 接口文档 → 对外访问地址」：<b class="mono">${esc(configured)}</b>`
+      : "浏览器当前地址（可在「系统设置 → 接口文档 → 对外访问地址」固定成局域网地址）"],
+  ].map(([k, v]) => `<div>${esc(k)}：${v}</div>`).join("")
+    + (isLocal && !configured
+      ? `<div class="err-text">提示：你现在用 127.0.0.1 打开本页，别的电脑调用会失败；请在「系统设置 → 接口文档 → 对外访问地址」填写服务电脑的局域网地址（如 http://192.168.0.193:7701）。</div>`
+      : "");
+
+  const box = $("#apiExamples");
+  box.innerHTML = "";
+  codeBlock(box, "① 最简：一行 GET（浏览器/脚本都能直接用）",
+    `${origin}/api/v1/follow/request?asin=${asin}&timestamp=${encodeURIComponent(ts)}&owner=${encodeURIComponent(owner)}`);
+  codeBlock(box, "② curl（单行，Windows CMD / PowerShell / Linux 通用）",
+    `curl -X POST "${origin}/api/v1/follow/request" -H "Content-Type: application/json" -d "{\\"asin\\":\\"${asin}\\",\\"timestamp\\":\\"${ts}\\",\\"owner\\":\\"${owner}\\"}"`);
+  codeBlock(box, "③ Python（标准库，无需安装依赖）",
+    `import json, urllib.request\n\n` +
+    `payload = {"asin": "${asin}", "timestamp": "${ts}", "owner": "${owner}"}\n` +
+    `req = urllib.request.Request(\n` +
+    `    "${origin}/api/v1/follow/request",\n` +
+    `    data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),\n` +
+    `    headers={"Content-Type": "application/json;charset=UTF-8"},\n` +
+    `    method="POST",\n` +
+    `)\n` +
+    `print(json.loads(urllib.request.urlopen(req, timeout=15).read().decode()))`);
+  codeBlock(box, "④ Python（requests）",
+    `import requests\n\n` +
+    `resp = requests.post(\n` +
+    `    "${origin}/api/v1/follow/request",\n` +
+    `    json={"asin": "${asin}", "timestamp": "${ts}", "owner": "${owner}"},\n` +
+    `    timeout=15,\n` +
+    `)\n` +
+    `print(resp.json())`);
+  codeBlock(box, "⑤ PowerShell",
+    `$body = @{ asin = "${asin}"; timestamp = "${ts}"; owner = "${owner}" } | ConvertTo-Json -Compress\n` +
+    `Invoke-RestMethod -Uri "${origin}/api/v1/follow/request" -Method Post ` +
+    `-ContentType "application/json;charset=UTF-8" \`\n  -Body ([System.Text.Encoding]::UTF8.GetBytes($body))`);
+  // 批量写法
+  const batchBox = $("#apiBatch");
+  batchBox.innerHTML = "";
+  codeBlock(batchBox, "写法一：asins 数组（推荐，JSON body）",
+    `curl -X POST "${origin}/api/v1/follow/request" -H "Content-Type: application/json" \`\n` +
+    `  -d "{\\"asins\\":[\\"B0HCVJ6HLY\\",\\"B0HDTTHHTW\\",\\"B0H9L18NJ5\\"],\\"timestamp\\":\\"${ts}\\",\\"owner\\":\\"${owner}\\"}"`);
+  codeBlock(batchBox, "写法二：asin 用逗号（或分号 / 空格 / 换行）分隔",
+    `{"asin": "B0HCVJ6HLY,B0HDTTHHTW,B0H9L18NJ5", "timestamp": "${ts}", "owner": "${owner}"}`);
+  codeBlock(batchBox, "写法三：整个 body 直接就是一个数组（无负责人）",
+    `["B0HCVJ6HLY", "B0HDTTHHTW", "B0H9L18NJ5"]`);
+  codeBlock(batchBox, "写法四：GET（浏览器/脚本直接打开，适合临时补跟进）",
+    `${origin}/api/v1/follow/request?asin=B0HCVJ6HLY,B0HDTTHHTW&owner=${encodeURIComponent(owner)}`);
+
+  const respBox = $("#apiResponse");
+  respBox.innerHTML = "";
+  codeBlock(respBox, "", JSON.stringify({
+    code: 0,
+    message: "已接收 2/2 个 ASIN，逐个建立跟进任务（新建 2 个、沿用进行中 0 个）",
+    data: {
+      items: [
+        {
+          asin: asin, ok: true, session_id: 12, created: true, state: "active", owner: owner,
+          status: 4, status_text: "failed", status_text_cn: "失败",
+          last_status_name: "失败", next_tick_at: "2026-09-16T17:35:00+08:00",
+          next_note: "每 10 分钟检查一次，失败自动发飞书重试消息",
+        },
+        {
+          asin: "B0HDTTHHTW", ok: true, session_id: 13, created: true, state: "active",
+          owner: owner, status: 2, status_text: "processing", status_text_cn: "处理中",
+          last_status_name: "处理中", next_tick_at: "2026-09-16T17:35:00+08:00",
+          next_note: "每 10 分钟检查一次，失败自动发飞书重试消息",
+        },
+      ],
+      accepted: 2, created: 2, reused: 0,
+      check_delay_minutes: 2, first_check_at: "2026-09-16T17:27:10+08:00",
+      request_ts: ts, owner: owner, received_at: "2026-09-16T17:25:10+08:00",
+    },
+    meta: {},
+  }, null, 2));
+
+  if (info && info.endpoints) {
+    $("#apiEndpoints").innerHTML =
+      `<table><thead><tr><th>方法</th><th>路径</th><th>说明</th><th>认证</th></tr></thead><tbody>`
+      + info.endpoints.map((e) =>
+        `<tr><td><span class="pill ${e.method === "GET" ? "info" : "purple"}">${esc(e.method)}</span></td>
+          <td class="mono">${esc(e.path)}</td><td>${esc(e.desc)}</td><td>${esc(e.auth)}</td></tr>`).join("")
+      + "</tbody></table>";
+  }
+  const cur = (info && info.current) || {};
+  const docBox = $("#apiDocUrls");
+  if (docBox) {
+    docBox.innerHTML = "";
+    codeBlock(docBox, "第三方机器上可直接访问（把地址复制给部署脚本的人即可）",
+      `${origin}/                  ← 监控页面\n` +
+      `${origin}/docs              ← Swagger 在线调试\n` +
+      `${origin}/openapi.json      ← OpenAPI 定义\n` +
+      `${origin}/api/ui/doc/download   ← 下载 Markdown 接口文档\n` +
+      `${origin}/api/v1/follow/request ← 请求跟进接口\n` +
+      `${origin}/healthz           ← 健康检查`);
+  }
+  $("#apiAuthNote").textContent =
+    `当前跟进节奏：${cur.follow_interval_minutes || 10} 分钟一次，单轮 ${cur.follow_round_minutes || 30} 分钟，`
+    + `最多 ${cur.follow_max_attempts || 5} 次重试；状态判定：${cur.status_success_value ?? 3}=成功、`
+    + `${cur.status_failed_value ?? 4}=失败、其它=处理中；飞书通知：${cur.feishu_ready ? "已配置" : "未配置"}。`;
+}
+
+// ── 系统设置 ──
+async function loadSettings() {
+  try {
+    const res = await api("/api/ui/settings");
+    state.settings = res.data;
+    $("#settingsGroups").innerHTML = (res.data.groups || []).map((g) => `
+      <div class="card">
+        <h2>${esc(g.group)}</h2>
+        ${g.items.map((it) => {
+          const id = "set-" + it.key;
+          let input;
+          if (it.type === "bool") {
+            input = `<select id="${id}" data-key="${it.key}">
+              <option value="true"${String(it.value).toLowerCase() === "true" ? " selected" : ""}>是</option>
+              <option value="false"${String(it.value).toLowerCase() !== "true" ? " selected" : ""}>否</option>
+            </select>`;
+          } else if (it.type === "text") {
+            input = `<textarea id="${id}" data-key="${it.key}">${esc(it.value)}</textarea>`;
+          } else {
+            input = `<input id="${id}" data-key="${it.key}" value="${esc(it.value)}"
+              ${it.secret ? 'placeholder="留空=不修改"' : ""} style="max-width:520px">`;
+          }
+          const srcCls = it.source === "ui" ? "ui" : it.source === "env" ? "env" : "";
+          const srcName = it.source === "ui" ? "界面" : it.source === "env" ? "环境变量" : "默认";
+          return `<div class="setitem">
+            <div class="lbl">${esc(it.label)}
+              <span class="muted mono">${esc(it.key)}</span>
+              <span class="src ${srcCls}">${srcName}</span>
+              ${it.secret && it.has_value ? '<span class="src">已配置</span>' : ""}
+            </div>
+            ${input}
+            ${it.help ? `<div class="help">${esc(it.help)}</div>` : ""}
+          </div>`;
+        }).join("")}
+      </div>`).join("");
+  } catch (e) { toast("加载设置失败：" + e.message, "err"); }
+}
+async function saveSettings() {
+  const values = {};
+  document.querySelectorAll("[data-key]").forEach((el) => { values[el.dataset.key] = el.value; });
+  try {
+    const res = await api("/api/ui/settings", { method: "POST", body: JSON.stringify({ values }) });
+    toast(res.message || `已保存 ${(res.data.saved || []).length} 项设置`);
+    loadSettings();
+  } catch (e) { toast("保存失败：" + e.message, "err"); }
+}
+
+// ── 顶部动作 ──
+$("#pollBtn").onclick = async () => {
+  const btn = $("#pollBtn");
+  btn.disabled = true; btn.textContent = "取数中…";
+  try {
+    const res = await api("/api/ui/poll/run", { method: "POST" });
+    const d = res.data;
+    toast(`取数完成：接口 ${d.api_total} 条，落库 ${d.fetched} 条（新增 ${d.inserted}，更新 ${d.updated}，变化 ${d.changed}）`);
+    if (d.auto_followed && d.auto_followed.length) toast("自动跟进：" + d.auto_followed.join(", "));
+    loadDashboard();
+  } catch (e) { toast("取数失败：" + e.message, "err"); }
+  finally { btn.disabled = false; btn.textContent = "⟳ 立即取数"; }
+};
+$("#testMsgBtn").onclick = async () => {
+  try {
+    const res = await api("/api/ui/feishu/test", { method: "POST", body: JSON.stringify({ text: $("#testMsg").value.trim() }) });
+    toast(res.message);
+  } catch (e) { toast("发送失败：" + e.message, "err"); }
+};
+$("#fbTestBtn").onclick = async () => {
+  const btn = $("#fbTestBtn");
+  btn.disabled = true; btn.textContent = "测试中…";
+  try {
+    const res = await api("/api/ui/fallback/test", { method: "POST" });
+    const s = (res.data && res.data.sample) || {};
+    toast(`自建 API 站可用：共 ${res.data.total} 条；样例 ${s.asin || s.msku || "-"} ${s.status_name || ""}`);
+    loadDashboard();
+  } catch (e) { toast("自建 API 站测试失败：" + e.message, "err"); }
+  finally { btn.disabled = false; btn.textContent = "测试自建 API 站"; }
+};
+$("#qAsinBtn").onclick = queryAsin;
+$("#qFollowBtn").onclick = requestFollowFromQuery;
+$("#rSearchBtn").onclick = () => loadRecords(1);
+$("#rResetBtn").onclick = () => {
+  ["fAsin", "fStore", "fCountry", "fKeyword", "fFrom", "fTo"].forEach((id) => { $("#" + id).value = ""; });
+  $("#fStatus").value = ""; $("#fOrder").value = "operate_desc";
+  loadRecords(1);
+};
+$("#rCsvBtn").onclick = exportRecords;
+$("#rPrev").onclick = () => loadRecords(state.records.page - 1);
+$("#rNext").onclick = () => loadRecords(state.records.page + 1);
+$("#rSize").onchange = () => { state.records.size = parseInt($("#rSize").value, 10); loadRecords(1); };
+$("#sSearchBtn").onclick = () => { state.sessions.page = 1; loadSessions(); };
+$("#sAddBtn").onclick = addSession;
+$("#pPrev").onclick = () => loadPolls(state.polls.page - 1);
+$("#pNext").onclick = () => loadPolls(state.polls.page + 1);
+$("#mSearchBtn").onclick = () => loadMessages(1);
+$("#mPrev").onclick = () => loadMessages(state.messages.page - 1);
+$("#mNext").onclick = () => loadMessages(state.messages.page + 1);
+$("#setSaveBtn").onclick = saveSettings;
+$("#setReloadBtn").onclick = loadSettings;
+
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+// ── 自动刷新 ──
+function startAutoRefresh() {
+  if (state.refreshTimer) clearInterval(state.refreshTimer);
+  state.refreshTimer = setInterval(() => {
+    if (!$("#autoRefresh").checked) return;
+    if (document.hidden) return;
+    if (state.tab === "dashboard") loadDashboard();
+    else if (state.tab === "sessions") loadSessions();
+    else if (state.tab === "records") loadRecords();
+    else if (state.tab === "polls") loadPolls();
+    else if (state.tab === "messages") loadMessages();
+  }, 20000);
+}
+
+switchTab("dashboard");
+startAutoRefresh();
+</script>
+</body>
+</html>
